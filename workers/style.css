@@ -1,3 +1,44 @@
+:root {
+    /* Base UI Colors */
+    --color-bg-base: #121212;
+    --color-bg-darker: #000000;
+    --color-bg-panel: #1a1a1a;
+    --color-bg-input: #252525;
+    --color-bg-hover: #2a2a2a;
+
+    /* Borders */
+    --color-border: #2e2e2e;
+    --color-border-light: #333333;
+    --color-border-focus: #444444;
+    --color-border-active: #555555;
+
+    /* Text */
+    --color-text-main: #e0e0e0;
+    --color-text-light: #ffffff;
+    --color-text-muted: #888888;
+    --color-text-subtle: #666666;
+
+    /* Core Semantic & Accent */
+    --color-primary: #8859ff;
+    --color-primary-hover: #744adf;
+    --color-danger: #ef4444;
+    --color-success: #22c55e;
+    --color-warning: #f59e0b;
+    --color-info: #0ea5e9;
+
+    /* Vibrant Palette */
+    --color-purple: #8859ff;
+    --color-pink: #ec4899;
+    --color-teal: #14b8a6;
+    --color-cyan: #06b6d4;
+    --color-indigo: #6366f1;
+    --color-fuchsia: #d946ef;
+    --color-rose: #f43f5e;
+    --color-orange: #f97316;
+    --color-emerald: #10b981;
+    --color-lime: #84cc16;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -6,8 +47,8 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-    background-color: #121212;
-    color: #e0e0e0;
+    background-color: var(--color-bg-base);
+    color: var(--color-text-main);
     height: 100vh;
     overflow: hidden;
 }
@@ -20,8 +61,8 @@ body {
 #sidebar {
     width: 20%;
     min-width: 280px;
-    background-color: #1a1a1a;
-    border-right: 1px solid #2e2e2e;
+    background-color: var(--color-bg-panel);
+    border-right: 1px solid var(--color-border);
     padding: 24px;
     display: flex;
     flex-direction: column;
@@ -41,16 +82,29 @@ body {
     transform: translateY(-50%);
     width: 18px;
     height: 18px;
-    color: #888;
+    color: var(--color-text-muted);
+}
+
+/* Specific colored icons for sidebars */
+.search-icon[data-lucide="search"] {
+    color: var(--color-info);
+}
+
+.search-icon[data-lucide="navigation"] {
+    color: var(--color-success);
+}
+
+.search-icon[data-lucide="map-pin"] {
+    color: var(--color-danger);
 }
 
 .pill-search {
     width: 100%;
     padding: 12px 16px 12px 48px;
     border-radius: 9999px;
-    border: 1px solid #333;
-    background-color: #252525;
-    color: #fff;
+    border: 1px solid var(--color-border-light);
+    background-color: var(--color-bg-input);
+    color: var(--color-text-light);
     font-size: 14px;
     font-weight: 500;
     outline: none;
@@ -58,19 +112,34 @@ body {
 }
 
 .pill-search:focus {
-    border-color: #444;
-    background-color: #2a2a2a;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05);
+    border-color: var(--color-primary);
+    background-color: var(--color-bg-hover);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 25%, transparent);
+}
+
+#search-bar:focus {
+    border-color: var(--color-info);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-info) 25%, transparent);
+}
+
+#starting-input:focus {
+    border-color: var(--color-success);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-success) 25%, transparent);
+}
+
+#destination-input:focus {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-danger) 25%, transparent);
 }
 
 .pill-search::placeholder {
-    color: #666;
+    color: var(--color-text-subtle);
 }
 
 #map-container {
     flex-grow: 1;
     height: 100%;
-    background-color: #000;
+    background-color: var(--color-bg-darker);
 }
 
 #map {
@@ -80,7 +149,7 @@ body {
 
 /* Leaflet specific overrides for dark theme */
 .leaflet-container {
-    background: #000 !important;
+    background: var(--color-bg-darker) !important;
 }
 
 #sidebar-content {
@@ -91,9 +160,9 @@ body {
 }
 
 .dropdown {
-    border: 1px solid #2e2e2e;
+    border: 1px solid var(--color-border);
     border-radius: 8px;
-    background-color: #252525;
+    background-color: var(--color-bg-input);
     overflow: hidden;
 }
 
@@ -103,12 +172,12 @@ body {
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
-    background-color: #1a1a1a;
+    background-color: var(--color-bg-panel);
     transition: background-color 0.2s;
 }
 
 .dropdown-header:hover {
-    background-color: #2a2a2a;
+    background-color: var(--color-bg-hover);
 }
 
 .dropdown-title {
@@ -120,19 +189,28 @@ body {
 .dropdown-header span {
     font-size: 14px;
     font-weight: 600;
-    color: #fff;
+    color: var(--color-text-light);
 }
 
 .dropdown-icon {
     width: 18px;
     height: 18px;
-    color: #888;
+    color: var(--color-text-muted);
+}
+
+/* Make dropdown main icons pop based on context */
+.dropdown-icon[data-lucide="settings"] {
+    color: var(--color-purple);
+}
+
+.dropdown-icon[data-lucide="car"] {
+    color: var(--color-primary);
 }
 
 .dropdown-chevron {
     width: 18px;
     height: 18px;
-    color: #888;
+    color: var(--color-text-muted);
     transition: transform 0.3s ease;
 }
 
@@ -151,11 +229,13 @@ body {
 }
 
 .dropdown.open .dropdown-content {
-    max-height: 500px; /* Adjust as needed */
+    max-height: 500px;
+    /* Adjust as needed */
     padding: 16px;
 }
 
-.feature-group, .output-group {
+.feature-group,
+.output-group {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -188,9 +268,9 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #333;
+    background-color: var(--color-border-light);
     transition: .3s;
-    border: 1px solid #444;
+    border: 1px solid var(--color-border-focus);
 }
 
 .slider:before {
@@ -200,20 +280,20 @@ body {
     width: 16px;
     left: 3px;
     bottom: 3px;
-    background-color: #fff;
+    background-color: var(--color-text-light);
     transition: .3s;
 }
 
-input:checked + .slider {
-    background-color: #3b82f6;
-    border-color: #3b82f6;
+input:checked+.slider {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
-input:focus + .slider {
-    box-shadow: 0 0 1px #3b82f6;
+input:focus+.slider {
+    box-shadow: 0 0 1px var(--color-primary);
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
     transform: translateX(20px);
 }
 
@@ -229,7 +309,7 @@ label {
     font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
-    color: #888;
+    color: var(--color-text-muted);
     letter-spacing: 0.5px;
 }
 
@@ -237,16 +317,17 @@ label {
     width: 100%;
     padding: 10px 14px;
     border-radius: 8px;
-    border: 1px solid #333;
-    background-color: #252525;
-    color: #fff;
+    border: 1px solid var(--color-border-light);
+    background-color: var(--color-bg-input);
+    color: var(--color-text-light);
     font-size: 14px;
     outline: none;
-    transition: border-color 0.2s;
+    transition: all 0.2s ease-in-out;
 }
 
 .sidebar-input:focus {
-    border-color: #555;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 25%, transparent);
 }
 
 .sidebar-btn {
@@ -258,8 +339,8 @@ label {
     padding: 12px;
     border-radius: 8px;
     border: none;
-    background-color: #3b82f6;
-    color: #fff;
+    background-color: var(--color-primary);
+    color: var(--color-text-light);
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
@@ -267,7 +348,7 @@ label {
 }
 
 .sidebar-btn:hover {
-    background-color: #2563eb;
+    background-color: var(--color-primary-hover);
 }
 
 .sidebar-btn:active {
@@ -275,7 +356,7 @@ label {
 }
 
 .sidebar-btn.error {
-    background-color: #ef4444 !important;
+    background-color: var(--color-danger) !important;
 }
 
 .sidebar-btn.loading {
@@ -287,9 +368,9 @@ label {
     width: 100%;
     padding: 10px 14px;
     border-radius: 8px;
-    border: 1px solid #2e2e2e;
-    background-color: #1a1a1a;
-    color: #bbb;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-bg-panel);
+    color: var(--color-text-main);
     font-size: 14px;
     min-height: 40px;
     display: flex;
@@ -303,8 +384,13 @@ label {
 }
 
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .animate-spin {

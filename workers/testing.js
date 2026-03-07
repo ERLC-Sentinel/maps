@@ -1,5 +1,8 @@
-async function test(type) {
-   if (type === "map") {
+let devModeNodes = [];
+let devModeEdges = [];
+
+document.getElementById('dev-mode-toggle').addEventListener('change', async (e) => {
+   if (e.target.checked) {
       try {
          const response = await fetch('mapping/mapping.json');
          const data = await response.json();
@@ -13,9 +16,9 @@ async function test(type) {
             nodeMap.set(node.id, node);
 
             const latlng = map.unproject([node.x, node.y], nativeZoom);
-            const color = node.address ? 'magenta' : 'purple';
+            const color = node.address ? 'pink' : 'purple';
 
-            L.circleMarker(latlng, {
+            let marker = L.circleMarker(latlng, {
                radius: 5,
                color: color,
                fillColor: color,
@@ -47,6 +50,8 @@ async function test(type) {
                   }
                })
                .addTo(map);
+
+            devModeNodes.push(marker);
          });
 
          let visibleEdges = 0;
@@ -61,12 +66,14 @@ async function test(type) {
                   const fromLatLng = map.unproject([fromNode.x, fromNode.y], nativeZoom);
                   const toLatLng = map.unproject([toNode.x, toNode.y], nativeZoom);
 
-                  L.polyline([fromLatLng, toLatLng], {
+                  let polyline = L.polyline([fromLatLng, toLatLng], {
                      color: 'green',
                      weight: 3,
                      opacity: 0.8,
                      interactive: false
                   }).addTo(map);
+
+                  devModeEdges.push(polyline);
 
                   if (edge.speed !== undefined) {
                      const midLatLng = [
@@ -81,10 +88,12 @@ async function test(type) {
                         iconAnchor: [15, 11]
                      });
 
-                     L.marker(midLatLng, {
+                     let speedMarker = L.marker(midLatLng, {
                         icon: speedIcon,
                         interactive: false
                      }).addTo(map);
+
+                     devModeEdges.push(speedMarker);
                   }
 
                   visibleEdges++;
@@ -96,7 +105,16 @@ async function test(type) {
       } catch (error) {
          console.error("Failed to fetch or parse mapping.json:", error);
       }
-   } else if (type === "mapjson") {
+   } else {
+      devModeNodes.forEach(node => map.removeLayer(node));
+      devModeEdges.forEach(edge => map.removeLayer(edge));
+      devModeNodes = [];
+      devModeEdges = [];
+   }
+});
+
+async function test(type) {
+   if (type === "mapjson") {
       try {
          const response = await fetch('mapping/mapping.json');
          const data = await response.json();
