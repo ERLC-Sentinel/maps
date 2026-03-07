@@ -217,6 +217,267 @@ document.querySelectorAll('.dropdown-header').forEach(header => {
     });
 });
 
+// --- Routing & Autocomplete Logic ---
+
+let mapData = { nodes: [], edges: [], adjacencyList: {} };
+let startNode = null;
+let destinationNode = null;
+let routeLayers = [];
+
+// Fetch map data
+async function loadMapData() {
+    try {
+        const response = await fetch('mapping/mapping.json');
+        mapData = await response.json();
+
+        // Build adjacency list for Dijkstra optimization
+        mapData.adjacencyList = {};
+        mapData.nodes.forEach(node => {
+            mapData.adjacencyList[node.id] = [];
+        });
+        mapData.edges.forEach(edge => {
+            mapData.adjacencyList[edge.from].push({ to: edge.to, edge });
+            mapData.adjacencyList[edge.to].push({ to: edge.from, edge });
+        });
+    } catch (err) {
+        console.error("Failed to load map data:", err);
+    }
+}
+loadMapData();
+
+function setupAutocomplete(inputId, listId) {
+    const input = document.getElementById(inputId);
+    const list = document.getElementById(listId);
+
+    const updateList = () => {
+        const query = input.value.toLowerCase().trim();
+        list.innerHTML = '';
+
+        // Clear selection if input changes
+        if (inputId === 'starting-input' && startNode && input.value !== startNode.label) {
+            startNode = null;
+        }
+        if (inputId === 'destination-input' && destinationNode && input.value !== destinationNode.label) {
+            destinationNode = null;
+        }
+
+        if (!query) {
+            list.style.display = 'none';
+            return;
+        }
+
+        const matches = mapData.nodes.filter(node =>
+            node.label.toLowerCase().includes(query) ||
+            (node.address && node.address.toLowerCase().includes(query))
+        ).slice(0, 5);
+
+        if (matches.length > 0) {
+            matches.forEach(node => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+
+                let html = `<span class="item-label">${node.label}</span>`;
+                if (node.address) {
+                    html += `<span class="item-address">${node.address}</span>`;
+                }
+
+                item.innerHTML = html;
+                item.addEventListener('click', () => {
+                    input.value = node.label;
+                    list.style.display = 'none';
+                    if (inputId === 'starting-input') startNode = node;
+                    if (inputId === 'destination-input') destinationNode = node;
+                    if (inputId === 'search-bar') {
+                        const latlng = map.unproject([node.x, node.y], nativeZoom);
+                        map.flyTo(latlng, maxZoomAllowed);
+                    }
+                });
+                list.appendChild(item);
+            });
+            list.style.display = 'block';
+        } else {
+            list.style.display = 'none';
+        }
+    };
+
+    input.addEventListener('input', updateList);
+    input.addEventListener('focus', updateList);
+
+    // Close list when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !list.contains(e.target)) {
+            list.style.display = 'none';
+        }
+    });
+}
+
+setupAutocomplete('search-bar', 'search-autocomplete');
+setupAutocomplete('starting-input', 'starting-autocomplete');
+setupAutocomplete('destination-input', 'destination-autocomplete');
+
+// Dijkstra's Algorithm
+function findFastestRoute(startId, endId) {
+    const nodes = mapData.nodes;
+    const adjacencyList = mapData.adjacencyList;
+
+    const distances = {};
+    const prev = {};
+    const pq = new Set();
+
+    nodes.forEach(node => {
+        distances[node.id] = Infinity;
+        prev[node.id] = null;
+        pq.add(node.id);
+    });
+
+    distances[startId] = 0;
+
+    while (pq.size > 0) {
+        let u = null;
+        pq.forEach(nodeId => {
+            if (u === null || distances[nodeId] < distances[u]) {
+                u = nodeId;
+            }
+        });
+
+        if (u === endId || distances[u] === Infinity) break;
+
+        pq.delete(u);
+
+        const neighbors = adjacencyList[u] || [];
+        neighbors.forEach(({ to: v, edge }) => {
+            if (!pq.has(v)) return;
+
+            // Weight = distance / speed (time)
+            const weight = edge.distance / (edge.speed || 40);
+            const alt = distances[u] + weight;
+
+            if (alt < distances[v]) {
+                distances[v] = alt;
+                prev[v] = { nodeId: u, edge };
+            }
+        });
+    }
+
+    const path = [];
+    let curr = endId;
+    while (prev[curr]) {
+        path.unshift({
+            from: prev[curr].nodeId,
+            to: curr,
+            edge: prev[curr].edge
+        });
+        curr = prev[curr].nodeId;
+    }
+
+    return path.length > 0 || startId === endId ? path : null;
+}
+
+function generateDirections(path) {
+    if (!path || path.length === 0) return ["You have arrived at your destination."];
+
+    const directions = [];
+    let currentRoad = null;
+
+    path.forEach((step, index) => {
+        const toNode = mapData.nodes.find(n => n.id === step.to);
+        const roadName = toNode.label.includes('&') ? toNode.label.split('&')[0].trim() : toNode.label;
+
+        if (index === 0) {
+            directions.push(`Head towards ${toNode.label}`);
+            currentRoad = roadName;
+        } else if (roadName !== currentRoad) {
+            directions.push(`Turn onto ${toNode.label}`);
+            currentRoad = roadName;
+        } else if (index === path.length - 1) {
+            directions.push(`Arrive at ${toNode.label}`);
+        }
+    });
+
+    return directions;
+}
+
+document.getElementById('go-btn').addEventListener('click', () => {
+    if (!startNode || !destinationNode) {
+        alert("Please select a valid start and destination from the autocomplete options.");
+        return;
+    }
+
+    const path = findFastestRoute(startNode.id, destinationNode.id);
+    if (!path) {
+        alert("No route found between these locations.");
+        return;
+    }
+
+    // Clear existing route
+    clearRoute();
+
+    // Draw route
+    const latlngs = [map.unproject([startNode.x, startNode.y], nativeZoom)];
+    let totalDistance = 0;
+    let totalTime = 0;
+
+    path.forEach(step => {
+        const node = mapData.nodes.find(n => n.id === step.to);
+        latlngs.push(map.unproject([node.x, node.y], nativeZoom));
+        totalDistance += step.edge.distance;
+        totalTime += step.edge.distance / (step.edge.speed || 40);
+    });
+
+    const polyline = L.polyline(latlngs, { color: 'var(--color-primary)', weight: 5 }).addTo(map);
+    const startMarker = L.marker(latlngs[0], {
+        icon: L.divIcon({
+            html: '<i data-lucide="navigation" style="color: var(--color-success);"></i>',
+            className: 'custom-marker',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        })
+    }).addTo(map);
+    const endMarker = L.marker(latlngs[latlngs.length - 1], {
+        icon: L.divIcon({
+            html: '<i data-lucide="map-pin" style="color: var(--color-danger);"></i>',
+            className: 'custom-marker',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        })
+    }).addTo(map);
+
+    routeLayers.push(polyline, startMarker, endMarker);
+    lucide.createIcons();
+
+    // Show Directions
+    const directionsDropdown = document.getElementById('directions-dropdown');
+    directionsDropdown.style.display = 'block';
+    directionsDropdown.classList.add('open');
+
+    document.getElementById('route-distance').textContent = `${totalDistance.toFixed(2)} units`;
+    document.getElementById('route-time').textContent = `${(totalTime * 60).toFixed(1)} mins (est)`;
+
+    const stepsList = document.getElementById('directions-steps');
+    stepsList.innerHTML = '';
+    const directions = generateDirections(path);
+    directions.forEach(text => {
+        const div = document.createElement('div');
+        div.className = 'step-item';
+        div.innerHTML = `<i data-lucide="circle" class="step-icon"></i><span>${text}</span>`;
+        stepsList.appendChild(div);
+    });
+    lucide.createIcons();
+
+    map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+});
+
+function clearRoute() {
+    routeLayers.forEach(layer => map.removeLayer(layer));
+    routeLayers = [];
+    document.getElementById('directions-dropdown').style.display = 'none';
+}
+
+document.getElementById('clear-route').addEventListener('click', (e) => {
+    e.stopPropagation();
+    clearRoute();
+});
+
 // --- PRC API Location Feature ---
 
 const apiKeyInput = document.getElementById('api-key');

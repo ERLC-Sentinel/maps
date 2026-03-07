@@ -703,6 +703,36 @@
       "to": "i-frea-hwy5",
       "distance": 425.37,
       "speed": 50
+    },
+    {
+      "from": "dmv",
+      "to": "i-soua-durr",
+      "distance": 70,
+      "speed": 25
+    },
+    {
+      "from": "liberty-cafe",
+      "to": "i-frea-durr",
+      "distance": 40,
+      "speed": 25
+    },
+    {
+      "from": "river-city-mod-shop",
+      "to": "i-graa-sanr",
+      "distance": 50,
+      "speed": 25
+    },
+    {
+      "from": "river-city-fire-rescue-station-1",
+      "to": "i-hilr-sanr",
+      "distance": 80,
+      "speed": 35
+    },
+    {
+      "from": "liberty-county-courthouse",
+      "to": "i-graa-mais",
+      "distance": 40,
+      "speed": 25
     }
   ]
 }
