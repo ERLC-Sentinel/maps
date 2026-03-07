@@ -20,19 +20,22 @@
             </div>
 
             <div class="search-container">
-                <i data-lucide="map-pin" class="search-icon"></i>
+                <i data-lucide="navigation" class="search-icon"></i>
                 <input type="text" id="starting-input" placeholder="Starting..." class="pill-search">
             </div>
 
             <div class="search-container">
-                <i data-lucide="navigation" class="search-icon"></i>
+                <i data-lucide="map-pin" class="search-icon"></i>
                 <input type="text" id="destination-input" placeholder="Destination..." class="pill-search">
             </div>
 
             <div id="sidebar-content">
                 <div class="dropdown" id="settings-dropdown">
                     <div class="dropdown-header">
-                        <span>Settings</span>
+                        <div class="dropdown-title">
+                            <i data-lucide="settings" class="dropdown-icon"></i>
+                            <span>Settings</span>
+                        </div>
                         <i data-lucide="chevron-down" class="dropdown-chevron"></i>
                     </div>
                     <div class="dropdown-content">
@@ -48,7 +51,10 @@
 
                 <div class="dropdown" id="player-location-dropdown">
                     <div class="dropdown-header">
-                        <span>Player Location Fetching</span>
+                        <div class="dropdown-title">
+                            <i data-lucide="car" class="dropdown-icon"></i>
+                            <span>Player Location Fetching</span>
+                        </div>
                         <i data-lucide="chevron-down" class="dropdown-chevron"></i>
                     </div>
                     <div class="dropdown-content">

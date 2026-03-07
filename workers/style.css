@@ -111,10 +111,22 @@ body {
     background-color: #2a2a2a;
 }
 
+.dropdown-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .dropdown-header span {
     font-size: 14px;
     font-weight: 600;
     color: #fff;
+}
+
+.dropdown-icon {
+    width: 18px;
+    height: 18px;
+    color: #888;
 }
 
 .dropdown-chevron {
