@@ -43,7 +43,8 @@ const map = L.map('map', {
     maxZoom: maxZoomAllowed
 });
 
-let currentOverlay = null;
+let blankOverlay = null;
+let postalsOverlay = null;
 
 // Load image to get dimensions
 const img = new Image();
@@ -67,17 +68,27 @@ img.onload = function () {
         postalToggle.checked = true; // Default to enabled
     }
 
-    const initialImage = postalToggle.checked ? mapImages.postals : mapImages.blank;
+    // Add image overlays
+    blankOverlay = L.imageOverlay(mapImages.blank, bounds).addTo(map);
+    postalsOverlay = L.imageOverlay(mapImages.postals, bounds).addTo(map);
 
-    // Add image overlay
-    currentOverlay = L.imageOverlay(initialImage, bounds).addTo(map);
+    function updateOverlayVisibility() {
+        if (postalToggle.checked) {
+            postalsOverlay.setOpacity(1);
+            blankOverlay.setOpacity(0);
+        } else {
+            postalsOverlay.setOpacity(0);
+            blankOverlay.setOpacity(1);
+        }
+    }
+
+    updateOverlayVisibility();
 
     // Handle toggle change
     postalToggle.addEventListener('change', (e) => {
         const isEnabled = e.target.checked;
         localStorage.setItem('postal-toggle-enabled', isEnabled);
-        const newImage = isEnabled ? mapImages.postals : mapImages.blank;
-        currentOverlay.setUrl(newImage);
+        updateOverlayVisibility();
     });
 
     // Update minimum zoom to prevent zooming out further than the image
@@ -197,6 +208,14 @@ img.onload = function () {
 
 // Start loading image
 img.src = mapImages.postals; // Use one of the images to get dimensions
+
+// --- Dropdown Functionality ---
+document.querySelectorAll('.dropdown-header').forEach(header => {
+    header.addEventListener('click', () => {
+        const dropdown = header.parentElement;
+        dropdown.classList.toggle('open');
+    });
+});
 
 // --- PRC API Location Feature ---
 

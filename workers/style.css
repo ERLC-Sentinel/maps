@@ -31,7 +31,7 @@ body {
 
 .search-container {
     position: relative;
-    margin-bottom: 30px;
+    margin-bottom: 12px;
 }
 
 .search-icon {
@@ -86,7 +86,61 @@ body {
 #sidebar-content {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.dropdown {
+    border: 1px solid #2e2e2e;
+    border-radius: 8px;
+    background-color: #252525;
+    overflow: hidden;
+}
+
+.dropdown-header {
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    background-color: #1a1a1a;
+    transition: background-color 0.2s;
+}
+
+.dropdown-header:hover {
+    background-color: #2a2a2a;
+}
+
+.dropdown-header span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.dropdown-chevron {
+    width: 18px;
+    height: 18px;
+    color: #888;
+    transition: transform 0.3s ease;
+}
+
+.dropdown.open .dropdown-chevron {
+    transform: rotate(180deg);
+}
+
+.dropdown-content {
+    padding: 0 16px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.dropdown.open .dropdown-content {
+    max-height: 500px; /* Adjust as needed */
+    padding: 16px;
 }
 
 .feature-group, .output-group {
