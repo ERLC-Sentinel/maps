@@ -1,0 +1,708 @@
+{
+  "nodes": [
+    {
+      "id": "i-frea-sanr",
+      "x": 658.23,
+      "y": 2401.96,
+      "label": "Freedom Avenue & Sandstone Road"
+    },
+    {
+      "id": "i-frea-durr",
+      "x": 803.43,
+      "y": 2398.87,
+      "label": "Freedom Avenue & Durham Road"
+    },
+    {
+      "id": "i-frea-mais",
+      "x": 918.75,
+      "y": 2399.22,
+      "label": "Freedom Avenue & Main Street"
+    },
+    {
+      "id": "i-frea-pars",
+      "x": 1072.97,
+      "y": 2398.39,
+      "label": "Freedom Avenue & Park Street"
+    },
+    {
+      "id": "i-frea-rivd",
+      "x": 1242,
+      "y": 2397.39,
+      "label": "Freedom Avenue & Riverside Drive"
+    },
+    {
+      "id": "i-frea-indr",
+      "x": 1420.48,
+      "y": 2399.2,
+      "label": "Freedom Avenue & Industrial Road"
+    },
+    {
+      "id": "i-frea-cros",
+      "x": 1571.94,
+      "y": 2398.35,
+      "label": "Freedom Avenue & Cross Street"
+    },
+    {
+      "id": "i-frea-clis",
+      "x": 1729.62,
+      "y": 2399.96,
+      "label": "Freedom Avenue & Cline Street"
+    },
+    {
+      "id": "i-frea-hwy5",
+      "x": 2154.98,
+      "y": 2397.43,
+      "label": "Freedom Avenue & River City HWY 55"
+    },
+    {
+      "id": "i-graa-sanr",
+      "x": 659.92,
+      "y": 2270.42,
+      "label": "Grand Avenue & Sandstone Road"
+    },
+    {
+      "id": "i-graa-mais",
+      "x": 916.47,
+      "y": 2271.2,
+      "label": "Grand Avenue & Main Street"
+    },
+    {
+      "id": "i-graa-durr",
+      "x": 803.45,
+      "y": 2270.92,
+      "label": "Grand Avenue & Durham Road"
+    },
+    {
+      "id": "i-graa-pars",
+      "x": 1071.92,
+      "y": 2272.83,
+      "label": "Grand Avenue & Park Street"
+    },
+    {
+      "id": "i-orcb-rivd",
+      "x": 1239.74,
+      "y": 2157.72,
+      "label": "Orchard Boulevard & Riverside Drive"
+    },
+    {
+      "id": "i-orcb-mais",
+      "x": 916.47,
+      "y": 2157.47,
+      "label": "Orchard Boulevard & Main Street"
+    },
+    {
+      "id": "i-orcb-durr",
+      "x": 817.93,
+      "y": 2174.92,
+      "label": "Orchard Boulevard & Durham Road"
+    },
+    {
+      "id": "i-soua-durr",
+      "x": 802.43,
+      "y": 2533.38,
+      "label": "Southern Avenue & Durham Road"
+    },
+    {
+      "id": "i-soua-mais",
+      "x": 917.45,
+      "y": 2532.38,
+      "label": "Southern Avenue & Main Street"
+    },
+    {
+      "id": "i-soua-pars",
+      "x": 1071.98,
+      "y": 2531.88,
+      "label": "Southern Avenue & Park Street"
+    },
+    {
+      "id": "i-libw-durr",
+      "x": 803.43,
+      "y": 2647.32,
+      "label": "Liberty Way & Durham Road"
+    },
+    {
+      "id": "i-libw-mais",
+      "x": 917.95,
+      "y": 2645.32,
+      "label": "Liberty Way & Main Street"
+    },
+    {
+      "id": "i-libw-pars",
+      "x": 1056.72,
+      "y": 2628.92,
+      "label": "Liberty Way & Park Street"
+    },
+    {
+      "id": "i-orcb-pars",
+      "x": 1070.88,
+      "y": 2157.92,
+      "label": "Orchard Boulevard & Park Street"
+    },
+    {
+      "id": "i-orcb-indr",
+      "x": 1419.49,
+      "y": 2158.11,
+      "label": "Orchard Boulevard & Industrial Road"
+    },
+    {
+      "id": "i-orcb-cros",
+      "x": 1574.99,
+      "y": 2155.87,
+      "label": "Orchard Boulevard & Cross Street"
+    },
+    {
+      "id": "i-orcb-clis",
+      "x": 1729.48,
+      "y": 2158.23,
+      "label": "Orchard Boulevard & Cline Street"
+    },
+    {
+      "id": "i-geoa-indr",
+      "x": 1419.61,
+      "y": 2271.1,
+      "label": "Georgia Avenue & Industrial Road"
+    },
+    {
+      "id": "i-geoa-cros",
+      "x": 1574.96,
+      "y": 2270.89,
+      "label": "Georgia Avenue & Cross Street"
+    },
+    {
+      "id": "i-geoa-clis",
+      "x": 1728.99,
+      "y": 2270.89,
+      "label": "Georgia Avenue & Cline Street"
+    },
+    {
+      "id": "i-madc-cros",
+      "x": 1574.16,
+      "y": 2532.21,
+      "label": "Madison Court & Cross Street"
+    },
+    {
+      "id": "i-madc-indr",
+      "x": 1440.94,
+      "y": 2517.93,
+      "label": "Madison Court & Industrial Road"
+    },
+    {
+      "id": "i-madc-clis",
+      "x": 1712.27,
+      "y": 2514.63,
+      "label": "Madison Court & Cline Street"
+    },
+    {
+      "id": "i-graa-fair",
+      "x": 483.38,
+      "y": 2254.85,
+      "label": "Grand Avenue & Fairfax Road"
+    },
+    {
+      "id": "i-hilr-sanr",
+      "x": 658.46,
+      "y": 2083.41,
+      "label": "Hillview Road & Sandstone Road"
+    },
+    {
+      "id": "i-hilr-fair",
+      "x": 469.53,
+      "y": 2085.94,
+      "label": "Hillview Road & Fairfax Road"
+    },
+    {
+      "id": "i-indp-sanr",
+      "x": 672.57,
+      "y": 2003.89,
+      "label": "Independence Parkway & Sandstone Road"
+    },
+    {
+      "id": "i-indp-mais",
+      "x": 917.6,
+      "y": 1984.39,
+      "label": "Independence Parkway & Main Street"
+    },
+    {
+      "id": "i-indp-pars",
+      "x": 1072.59,
+      "y": 1985.88,
+      "label": "Independence Parkway & Park Street"
+    },
+    {
+      "id": "i-indp-rivd",
+      "x": 1242.01,
+      "y": 1984.39,
+      "label": "Independence Parkway & Riverside Drive"
+    },
+    {
+      "id": "i-indp-cros",
+      "x": 1561.56,
+      "y": 2006.36,
+      "label": "Independence Parkway & Cross Street"
+    },
+    {
+      "id": "i-fair-arbl",
+      "x": 793.02,
+      "y": 1757.48,
+      "label": "Fairfax Road & Arbor Lane"
+    },
+    {
+      "id": "i-orch-cold",
+      "x": 1825.12,
+      "y": 2155.38,
+      "label": "Orchard Blvd & Colonial Drive"
+    },
+    {
+      "id": "i-frea-vald",
+      "x": 325.99,
+      "y": 2393.72,
+      "label": "Freedom Avenue & Valley Drive"
+    },
+    {
+      "id": "i-frea-vald",
+      "x": 791.31,
+      "y": 1611.89,
+      "label": "Valley Drive & Arbor Lane"
+    },
+    {
+      "id": "i-fair-rivd",
+      "x": 1239.22,
+      "y": 1612.81,
+      "label": "Fairfax Road & Riverside Drive"
+    },
+    {
+      "id": "i-orcb-vins",
+      "x": 1940.29,
+      "y": 2125.76,
+      "label": "Orchard Blvd & Vine Street"
+    },
+    {
+      "id": "i-indp-gibl",
+      "x": 1419.10,
+      "y": 1984.38,
+      "label": "Independence Parkway & Gibson Lane"
+    },
+    {
+      "id": "i-gibl-lees",
+      "x": 1686.25,
+      "y": 1728.82,
+      "label": "Gibson Lane & Lee Street"
+    },
+    {
+      "id": "i-maps-hwy5",
+      "x": 2155.63,
+      "y": 1089.44,
+      "label": "Maple Street & Highway 55"
+    },
+    {
+      "id": "i-hwy5-rivd",
+      "x": 1243.02,
+      "y": 716.39,
+      "label": "Highway 55 & Riverside Drive"
+    },
+    {
+      "id": "i-gibl-cold",
+      "x": 1826.81,
+      "y": 1731.70,
+      "label": "Gibson Lane & Colonial Drive"
+    },
+    {
+      "id": "i-vins-lees",
+      "x": 1709.30,
+      "y": 1613.21,
+      "label": "Vine Street & Lee Street"
+    },
+
+
+
+
+    
+
+
+    {
+      "id": "dmv",
+      "x": 759.99,
+      "y": 2472.78,
+      "label": "DMV",
+      "address": "2012 Durham Road, Postal 201"
+    },
+    {
+      "id": "liberty-cafe",
+      "x": 774.74,
+      "y": 2366.72,
+      "label": "Liberty Cafe",
+      "address": "2063 Freedom Avenue, Postal 206"
+    },
+    {
+      "id": "river-city-mod-shop",
+      "x": 712.49,
+      "y": 2224.73,
+      "label": "River City Mod Shop",
+      "address": "2111 Grand Avenue, Postal 211"
+    },
+    {
+      "id": "river-city-fire-rescue-station-1",
+      "x": 587.21,
+      "y": 2118.8,
+      "label": "River City Fire Rescue Station 1",
+      "address": "2101 Hillview Road, Postal 210"
+    },
+    {
+      "id": "liberty-county-courthouse",
+      "x": 885.1,
+      "y": 2246.57,
+      "label": "Liberty County Courthouse",
+      "address": "2121 Main Street, Postal 212"
+    }
+  ],
+  "edges": [
+    {
+      "from": "i-frea-sanr",
+      "to": "i-graa-sanr",
+      "distance": 131.55,
+      "speed": 50
+    },
+    {
+      "from": "i-frea-sanr",
+      "to": "i-frea-durr",
+      "distance": 145.23,
+      "speed": 40
+    },
+    {
+      "from": "i-graa-sanr",
+      "to": "i-graa-durr",
+      "distance": 143.53,
+      "speed": 45
+    },
+    {
+      "from": "i-graa-durr",
+      "to": "i-frea-durr",
+      "distance": 127.95,
+      "speed": 40
+    },
+    {
+      "from": "i-frea-durr",
+      "to": "i-frea-mais",
+      "distance": 115.32,
+      "speed": 40
+    },
+    {
+      "from": "i-graa-mais",
+      "to": "i-frea-mais",
+      "distance": 126.5,
+      "speed": 40
+    },
+    {
+      "from": "i-graa-durr",
+      "to": "i-graa-mais",
+      "distance": 118.2,
+      "speed": 40
+    },
+    {
+      "from": "i-orcb-indr",
+      "to": "i-orcb-cros",
+      "distance": 155.52,
+      "speed": 50
+    },
+    {
+      "from": "i-orcb-cros",
+      "to": "i-orcb-clis",
+      "distance": 154.51,
+      "speed": 50
+    },
+    {
+      "from": "i-orcb-indr",
+      "to": "i-geoa-indr",
+      "distance": 112.99,
+      "speed": 50
+    },
+    {
+      "from": "i-geoa-indr",
+      "to": "i-geoa-cros",
+      "distance": 155.35,
+      "speed": 50
+    },
+    {
+      "from": "i-graa-durr",
+      "to": "i-orcb-durr",
+      "distance": 97.09,
+      "speed": 40
+    },
+    {
+      "from": "i-graa-mais",
+      "to": "i-graa-pars",
+      "distance": 155.46,
+      "speed": 40
+    },
+    {
+      "from": "i-graa-pars",
+      "to": "i-frea-pars",
+      "distance": 125.56,
+      "speed": 40
+    },
+    {
+      "from": "i-frea-mais",
+      "to": "i-frea-pars",
+      "distance": 154.22,
+      "speed": 40
+    },
+    {
+      "from": "i-frea-pars",
+      "to": "i-frea-rivd",
+      "distance": 169.03,
+      "speed": 45
+    },
+    {
+      "from": "i-frea-rivd",
+      "to": "i-frea-indr",
+      "distance": 178.49,
+      "speed": 50
+    },
+    {
+      "from": "i-frea-indr",
+      "to": "i-frea-cros",
+      "distance": 151.46,
+      "speed": 50
+    },
+    {
+      "from": "i-frea-cros",
+      "to": "i-frea-clis",
+      "distance": 157.69,
+      "speed": 50
+    },
+    {
+      "from": "i-geoa-cros",
+      "to": "i-geoa-clis",
+      "distance": 154.03,
+      "speed": 50
+    },
+    {
+      "from": "i-geoa-indr",
+      "to": "i-frea-indr",
+      "distance": 128.1,
+      "speed": 40
+    },
+    {
+      "from": "i-geoa-cros",
+      "to": "i-frea-cros",
+      "distance": 127.5,
+      "speed": 50
+    },
+    {
+      "from": "i-geoa-clis",
+      "to": "i-frea-clis",
+      "distance": 129.07,
+      "speed": 50
+    },
+    {
+      "from": "i-orcb-durr",
+      "to": "i-orcb-mais",
+      "distance": 100.07,
+      "speed": 40
+    },
+    {
+      "from": "i-frea-durr",
+      "to": "i-soua-durr",
+      "distance": 134.51,
+      "speed": 40
+    },
+    {
+      "from": "i-soua-durr",
+      "to": "i-libw-durr",
+      "distance": 113.94,
+      "speed": 40
+    },
+    {
+      "from": "i-frea-mais",
+      "to": "i-soua-mais",
+      "distance": 133.17,
+      "speed": 40
+    },
+    {
+      "from": "i-frea-pars",
+      "to": "i-soua-pars",
+      "distance": 133.49,
+      "speed": 40
+    },
+    {
+      "from": "i-soua-pars",
+      "to": "i-libw-pars",
+      "distance": 98.23,
+      "speed": 40
+    },
+    {
+      "from": "i-soua-durr",
+      "to": "i-soua-mais",
+      "distance": 115.02,
+      "speed": 40
+    },
+    {
+      "from": "i-soua-mais",
+      "to": "i-soua-pars",
+      "distance": 154.53,
+      "speed": 40
+    },
+    {
+      "from": "i-libw-durr",
+      "to": "i-libw-mais",
+      "distance": 114.54,
+      "speed": 40
+    },
+    {
+      "from": "i-libw-mais",
+      "to": "i-libw-pars",
+      "distance": 139.74,
+      "speed": 40
+    },
+    {
+      "from": "i-graa-sanr",
+      "to": "i-hilr-sanr",
+      "distance": 187.02,
+      "speed": 50
+    },
+    {
+      "from": "i-hilr-sanr",
+      "to": "i-indp-sanr",
+      "distance": 80.76,
+      "speed": 50
+    },
+    {
+      "from": "i-graa-fair",
+      "to": "i-hilr-fair",
+      "distance": 169.48,
+      "speed": 55
+    },
+    {
+      "from": "i-graa-fair",
+      "to": "i-graa-sanr",
+      "distance": 177.23,
+      "speed": 50
+    },
+    {
+      "from": "i-hilr-fair",
+      "to": "i-hilr-sanr",
+      "distance": 188.95,
+      "speed": 50
+    },
+    {
+      "from": "i-indp-sanr",
+      "to": "i-indp-mais",
+      "distance": 245.8,
+      "speed": 50
+    },
+    {
+      "from": "i-indp-mais",
+      "to": "i-indp-pars",
+      "distance": 155,
+      "speed": 50
+    },
+    {
+      "from": "i-indp-pars",
+      "to": "i-indp-rivd",
+      "distance": 169.43,
+      "speed": 50
+    },
+    {
+      "from": "i-graa-mais",
+      "to": "i-orcb-mais",
+      "distance": 113.73,
+      "speed": 40
+    },
+    {
+      "from": "i-orcb-mais",
+      "to": "i-indp-mais",
+      "distance": 173.08,
+      "speed": 45
+    },
+    {
+      "from": "i-graa-pars",
+      "to": "i-orcb-pars",
+      "distance": 114.91,
+      "speed": 40
+    },
+    {
+      "from": "i-orcb-pars",
+      "to": "i-indp-pars",
+      "distance": 172.05,
+      "speed": 45
+    },
+    {
+      "from": "i-frea-rivd",
+      "to": "i-orcb-rivd",
+      "distance": 239.68,
+      "speed": 45
+    },
+    {
+      "from": "i-orcb-rivd",
+      "to": "i-indp-rivd",
+      "distance": 173.34,
+      "speed": 45
+    },
+    {
+      "from": "i-orcb-mais",
+      "to": "i-orcb-pars",
+      "distance": 154.41,
+      "speed": 40
+    },
+    {
+      "from": "i-orcb-pars",
+      "to": "i-orcb-rivd",
+      "distance": 168.86,
+      "speed": 45
+    },
+    {
+      "from": "i-orcb-rivd",
+      "to": "i-orcb-indr",
+      "distance": 179.75,
+      "speed": 50
+    },
+    {
+      "from": "i-madc-indr",
+      "to": "i-madc-cros",
+      "distance": 133.98,
+      "speed": 40
+    },
+    {
+      "from": "i-madc-cros",
+      "to": "i-madc-clis",
+      "distance": 139.22,
+      "speed": 40
+    },
+    {
+      "from": "i-frea-indr",
+      "to": "i-madc-indr",
+      "distance": 120.48,
+      "speed": 40
+    },
+    {
+      "from": "i-orcb-cros",
+      "to": "i-indp-cros",
+      "distance": 150.11,
+      "speed": 50
+    },
+    {
+      "from": "i-frea-cros",
+      "to": "i-madc-cros",
+      "distance": 133.88,
+      "speed": 50
+    },
+    {
+      "from": "i-frea-clis",
+      "to": "i-madc-clis",
+      "distance": 115.98,
+      "speed": 40
+    },
+    {
+      "from": "i-orcb-clis",
+      "to": "i-orch-cold",
+      "distance": 95.68,
+      "speed": 50
+    },
+    {
+      "from": "i-frea-clis",
+      "to": "i-frea-hwy5",
+      "distance": 425.37,
+      "speed": 50
+    }
+  ]
+}
