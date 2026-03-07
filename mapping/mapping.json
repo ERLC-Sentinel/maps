@@ -711,9 +711,21 @@
       "speed": 25
     },
     {
+      "from": "dmv",
+      "to": "i-frea-durr",
+      "distance": 86,
+      "speed": 25
+    },
+    {
       "from": "liberty-cafe",
       "to": "i-frea-durr",
       "distance": 40,
+      "speed": 25
+    },
+    {
+      "from": "liberty-cafe",
+      "to": "i-graa-durr",
+      "distance": 100,
       "speed": 25
     },
     {
@@ -723,15 +735,33 @@
       "speed": 25
     },
     {
+      "from": "river-city-mod-shop",
+      "to": "i-graa-durr",
+      "distance": 101,
+      "speed": 25
+    },
+    {
       "from": "river-city-fire-rescue-station-1",
       "to": "i-hilr-sanr",
       "distance": 80,
       "speed": 35
     },
     {
+      "from": "river-city-fire-rescue-station-1",
+      "to": "i-hilr-fair",
+      "distance": 122,
+      "speed": 35
+    },
+    {
       "from": "liberty-county-courthouse",
       "to": "i-graa-mais",
       "distance": 40,
+      "speed": 25
+    },
+    {
+      "from": "liberty-county-courthouse",
+      "to": "i-graa-durr",
+      "distance": 85,
       "speed": 25
     }
   ]

@@ -211,7 +211,11 @@ img.src = mapImages.postals; // Use one of the images to get dimensions
 
 // --- Dropdown Functionality ---
 document.querySelectorAll('.dropdown-header').forEach(header => {
-    header.addEventListener('click', () => {
+    header.addEventListener('click', (e) => {
+        // If clicking an action icon (like the clear-route X), do not toggle the dropdown
+        if (e.target.closest('.action-icon')) {
+            return;
+        }
         const dropdown = header.parentElement;
         dropdown.classList.toggle('open');
     });
@@ -318,7 +322,42 @@ setupAutocomplete('destination-input', 'destination-autocomplete');
 // Dijkstra's Algorithm
 function findFastestRoute(startId, endId) {
     const nodes = mapData.nodes;
-    const adjacencyList = mapData.adjacencyList;
+
+    // Create a local adjacency list to modify for this specific route
+    const adjacencyList = {};
+    for (const nodeId in mapData.adjacencyList) {
+        adjacencyList[nodeId] = [...mapData.adjacencyList[nodeId]];
+    }
+
+    // For buildings, ensure we consider the 2 nearest intersections as entry/exit points
+    const ensureDynamicEdges = (nodeId) => {
+        const node = nodes.find(n => n.id === nodeId);
+        if (!node || node.label.includes('&')) return;
+
+        const intersections = nodes.filter(n => n.label.includes('&'));
+        const sorted = intersections.map(inter => {
+            const dx = inter.x - node.x;
+            const dy = inter.y - node.y;
+            return { inter, dist: Math.sqrt(dx * dx + dy * dy) };
+        }).sort((a, b) => a.dist - b.dist);
+
+        const nearest = sorted.slice(0, 2);
+
+        if (!adjacencyList[nodeId]) adjacencyList[nodeId] = [];
+
+        nearest.forEach(({ inter, dist }) => {
+            if (!adjacencyList[nodeId].some(e => e.to === inter.id)) {
+                const edge = { from: nodeId, to: inter.id, distance: dist, speed: 25 };
+                adjacencyList[nodeId].push({ to: inter.id, edge });
+
+                if (!adjacencyList[inter.id]) adjacencyList[inter.id] = [];
+                adjacencyList[inter.id] = [...adjacencyList[inter.id], { to: nodeId, edge }];
+            }
+        });
+    };
+
+    ensureDynamicEdges(startId);
+    ensureDynamicEdges(endId);
 
     const distances = {};
     const prev = {};
@@ -386,11 +425,11 @@ function generateDirections(path) {
         if (index === 0) {
             directions.push(`Head towards ${toNode.label}`);
             currentRoad = roadName;
+        } else if (index === path.length - 1) {
+            directions.push(`Arrive at ${toNode.label}`);
         } else if (roadName !== currentRoad) {
             directions.push(`Turn onto ${toNode.label}`);
             currentRoad = roadName;
-        } else if (index === path.length - 1) {
-            directions.push(`Arrive at ${toNode.label}`);
         }
     });
 
@@ -451,7 +490,6 @@ document.getElementById('go-btn').addEventListener('click', () => {
     directionsDropdown.classList.add('open');
 
     document.getElementById('route-distance').textContent = `${totalDistance.toFixed(2)} units`;
-    document.getElementById('route-time').textContent = `${(totalTime * 60).toFixed(1)} mins (est)`;
 
     const stepsList = document.getElementById('directions-steps');
     stepsList.innerHTML = '';
@@ -470,12 +508,17 @@ document.getElementById('go-btn').addEventListener('click', () => {
 function clearRoute() {
     routeLayers.forEach(layer => map.removeLayer(layer));
     routeLayers = [];
-    document.getElementById('directions-dropdown').style.display = 'none';
+    const dropdown = document.getElementById('directions-dropdown');
+    dropdown.style.display = 'none';
+    dropdown.classList.remove('open');
 }
 
-document.getElementById('clear-route').addEventListener('click', (e) => {
-    e.stopPropagation();
-    clearRoute();
+document.body.addEventListener('click', (e) => {
+    if (e.target && (e.target.id === 'clear-route' || e.target.closest('#clear-route'))) {
+        e.preventDefault();
+        e.stopPropagation();
+        clearRoute();
+    }
 });
 
 // --- PRC API Location Feature ---
