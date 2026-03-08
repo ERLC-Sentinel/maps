@@ -241,7 +241,9 @@ async function loadMapData() {
         });
         mapData.edges.forEach(edge => {
             mapData.adjacencyList[edge.from].push({ to: edge.to, edge });
-            mapData.adjacencyList[edge.to].push({ to: edge.from, edge });
+            if (!edge.oneWay) {
+                mapData.adjacencyList[edge.to].push({ to: edge.from, edge });
+            }
         });
     } catch (err) {
         console.error("Failed to load map data:", err);
@@ -332,9 +334,9 @@ function findFastestRoute(startId, endId) {
     // For buildings, ensure we consider the 2 nearest intersections as entry/exit points
     const ensureDynamicEdges = (nodeId) => {
         const node = nodes.find(n => n.id === nodeId);
-        if (!node || node.label.includes('&')) return;
+        if (!node || node.type !== 'poi') return;
 
-        const intersections = nodes.filter(n => n.label.includes('&'));
+        const intersections = nodes.filter(n => n.type === 'intersection');
         const sorted = intersections.map(inter => {
             const dx = inter.x - node.x;
             const dy = inter.y - node.y;
@@ -420,14 +422,20 @@ function generateDirections(path) {
 
     path.forEach((step, index) => {
         const toNode = mapData.nodes.find(n => n.id === step.to);
+
+        // Skip waypoint nodes in directions
+        if (toNode.type === 'waypoint') return;
+
         const roadName = toNode.label.includes('&') ? toNode.label.split('&')[0].trim() : toNode.label;
 
         if (index === 0) {
             directions.push(`Head towards ${toNode.label}`);
             currentRoad = roadName;
-        } else if (index === path.length - 1) {
+        }
+
+        if (index === path.length - 1) {
             directions.push(`Arrive at ${toNode.label}`);
-        } else if (roadName !== currentRoad) {
+        } else if (index > 0 && toNode.type === 'intersection' && roadName !== currentRoad) {
             directions.push(`Turn onto ${toNode.label}`);
             currentRoad = roadName;
         }
@@ -457,8 +465,20 @@ document.getElementById('go-btn').addEventListener('click', () => {
     let totalTime = 0;
 
     path.forEach(step => {
-        const node = mapData.nodes.find(n => n.id === step.to);
-        latlngs.push(map.unproject([node.x, node.y], nativeZoom));
+        const toNode = mapData.nodes.find(n => n.id === step.to);
+
+        // Add waypoints if they exist
+        if (step.edge.waypoints && step.edge.waypoints.length > 0) {
+            // Check if we need to reverse waypoints (if traversing edge in reverse)
+            const isReverse = step.from === step.edge.to;
+            const waypoints = isReverse ? [...step.edge.waypoints].reverse() : step.edge.waypoints;
+
+            waypoints.forEach(wp => {
+                latlngs.push(map.unproject([wp[0], wp[1]], nativeZoom));
+            });
+        }
+
+        latlngs.push(map.unproject([toNode.x, toNode.y], nativeZoom));
         totalDistance += step.edge.distance;
         totalTime += step.edge.distance / (step.edge.speed || 40);
     });
