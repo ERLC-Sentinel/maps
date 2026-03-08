@@ -1,6 +1,13 @@
 let devModeNodes = [];
 let devModeEdges = [];
 
+function clearDevModeLayers() {
+   devModeNodes.forEach(node => map.removeLayer(node));
+   devModeEdges.forEach(edge => map.removeLayer(edge));
+   devModeNodes = [];
+   devModeEdges = [];
+}
+
 document.getElementById('dev-mode-toggle').addEventListener('change', async (e) => {
    if (e.target.checked) {
       try {

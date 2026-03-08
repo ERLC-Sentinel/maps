@@ -46,6 +46,23 @@ const map = L.map('map', {
 let blankOverlay = null;
 let postalsOverlay = null;
 
+// Creation Mode State
+let creationModeEnabled = false;
+let creationData = { nodes: [], edges: [] };
+let creationLayers = [];
+let edgeStartNode = null;
+let pendingNodeData = null;
+
+// Load creation data from localStorage
+const savedCreationData = localStorage.getItem('creation-mapping');
+if (savedCreationData) {
+    try {
+        creationData = JSON.parse(savedCreationData);
+    } catch (e) {
+        console.error("Error parsing creation-mapping from localStorage", e);
+    }
+}
+
 // Load image to get dimensions
 const img = new Image();
 img.onload = function () {
@@ -60,6 +77,7 @@ img.onload = function () {
 
     // Initial image selection
     const postalToggle = document.getElementById('postal-toggle');
+    const devModeToggle = document.getElementById('dev-mode-toggle');
     const savedToggleState = localStorage.getItem('postal-toggle-enabled');
 
     if (savedToggleState !== null) {
@@ -91,6 +109,14 @@ img.onload = function () {
         updateOverlayVisibility();
     });
 
+    devModeToggle.addEventListener('change', (e) => {
+        if (e.target.checked && creationModeEnabled) {
+            creationToggle.checked = false;
+            creationModeEnabled = false;
+            updateCreationModeVisibility();
+        }
+    });
+
     // Update minimum zoom to prevent zooming out further than the image
     function updateMinZoom() {
         const minZ = map.getBoundsZoom(bounds, false);
@@ -110,98 +136,58 @@ img.onload = function () {
         position: 'topright'
     }).addTo(map);
 
-    // Handle right-click
-    map.on('contextmenu', (e) => {
+    // Handle map clicks for Creation Mode
+    map.getContainer().addEventListener('mousedown', (e) => {
+        if (!creationModeEnabled) return;
 
-        // Prevent browser menu
+        const latlng = map.mouseEventToLatLng(e);
+        const pixelPoint = map.project(latlng, nativeZoom);
+        const x = parseFloat(pixelPoint.x.toFixed(2));
+        const y = parseFloat(pixelPoint.y.toFixed(2));
+
+        if (e.button === 1) { // Middle click: Building
+            e.preventDefault();
+            showCreationModal('building', { x, y });
+        }
+    });
+
+    map.on('contextmenu', (e) => {
         if (e.originalEvent) {
             e.originalEvent.preventDefault();
         }
 
-        // Convert click to pixel coordinates
-        const pixelPoint = map.project(e.latlng, nativeZoom);
-        const x = pixelPoint.x.toFixed(2);
-        const y = pixelPoint.y.toFixed(2);
+        if (creationModeEnabled) {
+            const pixelPoint = map.project(e.latlng, nativeZoom);
+            const x = parseFloat(pixelPoint.x.toFixed(2));
+            const y = parseFloat(pixelPoint.y.toFixed(2));
 
-        const textToCopy = `x: ${x}, y: ${y}`;
-
-        // Copy coordinates
-        copyToClipboard(textToCopy);
-
-        // Add temporary red dot
-        const dot = L.circleMarker(e.latlng, {
-            radius: 5,
-            color: 'red',
-            fillColor: 'red',
-            fillOpacity: 1,
-            weight: 0,
-            interactive: false
-        }).addTo(map);
-
-        // Remove dot after 1 second
-        setTimeout(() => {
-            map.removeLayer(dot);
-        }, 1000);
-    });
-
-    // Handle middle-click measurement
-    let isMeasuring = false;
-    let measurePoints = [];
-    let measureLine = null;
-
-    // Prevent default browser autoscroll behavior on middle click
-    map.getContainer().addEventListener('mousedown', (e) => {
-        if (e.button === 1) { // Middle click
-            e.preventDefault();
-            map.dragging.disable();
-
-            isMeasuring = true;
-            measurePoints = [map.mouseEventToLatLng(e)];
-
-            if (measureLine) {
-                map.removeLayer(measureLine);
+            if (e.originalEvent.shiftKey) {
+                // Shift + Right Click: Intersection
+                showCreationModal('intersection', { x, y });
+            } else if (e.originalEvent.ctrlKey) {
+                // Ctrl + Right Click: Edge selection
+                handleEdgeSelection(e.latlng);
             }
+        } else {
+            // Default Right Click behavior
+            const pixelPoint = map.project(e.latlng, nativeZoom);
+            const x = pixelPoint.x.toFixed(2);
+            const y = pixelPoint.y.toFixed(2);
+            const textToCopy = `x: ${x}, y: ${y}`;
+            copyToClipboard(textToCopy);
 
-            measureLine = L.polyline(measurePoints, {
-                color: 'blue',
-                weight: 3,
+            const dot = L.circleMarker(e.latlng, {
+                radius: 5,
+                color: 'red',
+                fillColor: 'red',
+                fillOpacity: 1,
+                weight: 0,
                 interactive: false
             }).addTo(map);
-        }
-    });
 
-    map.getContainer().addEventListener('mousemove', (e) => {
-        if (isMeasuring && measureLine) {
-            measurePoints.push(map.mouseEventToLatLng(e));
-            measureLine.setLatLngs(measurePoints);
-        }
-    });
-
-    window.addEventListener('mouseup', (e) => {
-        if (e.button === 1 && isMeasuring) {
-            isMeasuring = false;
-            map.dragging.enable();
-
-            if (measurePoints.length > 0 && measureLine) {
-                let totalDistance = 0;
-
-                for (let i = 1; i < measurePoints.length; i++) {
-                    const p1 = map.project(measurePoints[i - 1], nativeZoom);
-                    const p2 = map.project(measurePoints[i], nativeZoom);
-
-                    const dx = p2.x - p1.x;
-                    const dy = p2.y - p1.y;
-                    totalDistance += Math.sqrt(dx * dx + dy * dy);
-                }
-
-                const distanceStr = totalDistance.toFixed(2);
-
-                copyToClipboard(distanceStr);
-
-                map.removeLayer(measureLine);
-                measureLine = null;
-                measurePoints = [];
-            }
+            setTimeout(() => {
+                map.removeLayer(dot);
+            }, 1000);
         }
     });
 };
@@ -665,3 +651,408 @@ function showError(message) {
         getLocationBtn.classList.remove('error');
     }, 2000);
 }
+
+// --- Creation Mode Logic ---
+
+const creationToggle = document.getElementById('creation-mode-toggle');
+const openCreationDataBtn = document.getElementById('open-creation-data-btn');
+const modalOverlay = document.getElementById('modal-overlay');
+const creationModal = document.getElementById('creation-modal');
+const dataModal = document.getElementById('data-modal');
+const modalTitle = document.getElementById('modal-title');
+const buildingFields = document.getElementById('building-fields');
+const intersectionFields = document.getElementById('intersection-fields');
+const edgeFields = document.getElementById('edge-fields');
+const modalSave = document.getElementById('modal-save');
+const modalCancel = document.getElementById('modal-cancel');
+const modalDelete = document.getElementById('modal-delete');
+// Use event delegation for modal closing to handle Lucide icon replacement
+document.addEventListener('click', (e) => {
+    if (e.target.closest('.close-modal')) {
+        modalOverlay.style.display = 'none';
+        pendingNodeData = null;
+    }
+});
+
+creationToggle.addEventListener('change', (e) => {
+    creationModeEnabled = e.target.checked;
+    updateCreationModeVisibility();
+});
+
+function updateCreationModeVisibility() {
+    if (creationModeEnabled) {
+        // Disable original map data
+        clearRoute();
+
+        // Clear Developer Mode if it was on
+        const devModeToggle = document.getElementById('dev-mode-toggle');
+        if (devModeToggle.checked) {
+            devModeToggle.checked = false;
+            if (typeof clearDevModeLayers === 'function') {
+                clearDevModeLayers();
+            }
+        }
+
+        renderCreationData();
+    } else {
+        clearCreationLayers();
+        saveCreationData();
+    }
+}
+
+function showCreationModal(type, data, isEdit = false) {
+    pendingNodeData = { type, ...data, isEdit };
+    const titlePrefix = isEdit ? 'Edit' : 'Create';
+    modalTitle.textContent = type === 'building' ? `${titlePrefix} Building Node` :
+                          type === 'intersection' ? `${titlePrefix} Intersection Node` :
+                          `${titlePrefix} Edge`;
+
+    buildingFields.style.display = type === 'building' ? 'block' : 'none';
+    intersectionFields.style.display = type === 'intersection' ? 'block' : 'none';
+    edgeFields.style.display = type === 'edge' ? 'block' : 'none';
+    modalDelete.style.display = isEdit ? 'block' : 'none';
+
+    modalOverlay.style.display = 'flex';
+    creationModal.style.display = 'flex';
+    dataModal.style.display = 'none';
+    lucide.createIcons();
+
+    if (isEdit) {
+        if (type === 'building') {
+            document.getElementById('building-label').value = data.label || '';
+            document.getElementById('building-address').value = data.address || '';
+        } else if (type === 'intersection') {
+            const parts = (data.label || '').split('&').map(s => s.trim());
+            // Extract road names from label if they follow "Name (Lanes)" format
+            const roadH = parts[0] ? parts[0].replace(/\s*\(\d+\)$/, '') : '';
+            const roadV = parts[1] ? parts[1].replace(/\s*\(\d+\)$/, '') : '';
+            document.getElementById('road-h').value = roadH;
+            document.getElementById('road-v').value = roadV;
+            document.getElementById('lanes-h').value = data.h_lanes || '';
+            document.getElementById('lanes-v').value = data.v_lanes || '';
+        } else if (type === 'edge') {
+            document.getElementById('edge-speed').value = data.speed || '40';
+        }
+    } else {
+        // Clear inputs
+        document.getElementById('building-label').value = '';
+        document.getElementById('building-address').value = '';
+        document.getElementById('road-h').value = '';
+        document.getElementById('lanes-h').value = '';
+        document.getElementById('road-v').value = '';
+        document.getElementById('lanes-v').value = '';
+        document.getElementById('edge-speed').value = '40';
+    }
+}
+
+modalCancel.addEventListener('click', () => {
+    modalOverlay.style.display = 'none';
+    pendingNodeData = null;
+});
+
+
+modalSave.addEventListener('click', () => {
+    if (!pendingNodeData) return;
+
+    if (pendingNodeData.type === 'building') {
+        const label = document.getElementById('building-label').value.trim();
+        const address = document.getElementById('building-address').value.trim();
+        if (!label) return alert("Label is required");
+
+        const id = label.toLowerCase().replace(/\s+/g, '-');
+        const node = {
+            id,
+            x: pendingNodeData.x,
+            y: pendingNodeData.y,
+            label,
+            address,
+            type: 'poi'
+        };
+
+        if (pendingNodeData.isEdit) {
+            const oldId = pendingNodeData.id;
+            const index = creationData.nodes.findIndex(n => n.id === oldId);
+            if (index !== -1) {
+                creationData.nodes[index] = node;
+                // Update connected edges if ID changed
+                if (oldId !== id) {
+                    creationData.edges.forEach(edge => {
+                        if (edge.from === oldId) edge.from = id;
+                        if (edge.to === oldId) edge.to = id;
+                    });
+                }
+            }
+        } else {
+            creationData.nodes.push(node);
+        }
+    } else if (pendingNodeData.type === 'intersection') {
+        const roadH = document.getElementById('road-h').value.trim();
+        const roadV = document.getElementById('road-v').value.trim();
+        const lanesH = parseInt(document.getElementById('lanes-h').value) || 0;
+        const lanesV = parseInt(document.getElementById('lanes-v').value) || 0;
+
+        if (!roadH || !roadV) return alert("Both roads are required");
+
+        const label = `${roadH} (${lanesH}) & ${roadV} (${lanesV})`;
+        const id = label.toLowerCase().replace(/\s+/g, '-');
+        const node = {
+            id,
+            x: pendingNodeData.x,
+            y: pendingNodeData.y,
+            label,
+            type: 'intersection',
+            h_lanes: lanesH,
+            v_lanes: lanesV
+        };
+
+        if (pendingNodeData.isEdit) {
+            const oldId = pendingNodeData.id;
+            const index = creationData.nodes.findIndex(n => n.id === oldId);
+            if (index !== -1) {
+                creationData.nodes[index] = node;
+                if (oldId !== id) {
+                    creationData.edges.forEach(edge => {
+                        if (edge.from === oldId) edge.from = id;
+                        if (edge.to === oldId) edge.to = id;
+                    });
+                }
+            }
+        } else {
+            creationData.nodes.push(node);
+        }
+    } else if (pendingNodeData.type === 'edge') {
+        const speed = parseInt(document.getElementById('edge-speed').value);
+        if (isNaN(speed)) return alert("Invalid speed");
+
+        if (pendingNodeData.isEdit) {
+            const edge = creationData.edges.find(e => e.from === pendingNodeData.from && e.to === pendingNodeData.to);
+            if (edge) {
+                edge.speed = speed;
+            }
+        } else {
+            const fromNode = creationData.nodes.find(n => n.id === pendingNodeData.from);
+            const toNode = creationData.nodes.find(n => n.id === pendingNodeData.to);
+
+            const dx = toNode.x - fromNode.x;
+            const dy = toNode.y - fromNode.y;
+            const distance = parseFloat(Math.sqrt(dx * dx + dy * dy).toFixed(2));
+
+            const edge = {
+                from: pendingNodeData.from,
+                to: pendingNodeData.to,
+                distance,
+                speed,
+                oneWay: true,
+                waypoints: []
+            };
+            creationData.edges.push(edge);
+        }
+    }
+
+    saveCreationData();
+    renderCreationData();
+    modalOverlay.style.display = 'none';
+    pendingNodeData = null;
+});
+
+modalDelete.addEventListener('click', () => {
+    if (!pendingNodeData || !pendingNodeData.isEdit) return;
+
+    if (confirm("Are you sure you want to delete this?")) {
+        if (pendingNodeData.type === 'edge') {
+            creationData.edges = creationData.edges.filter(e =>
+                !(e.from === pendingNodeData.from && e.to === pendingNodeData.to)
+            );
+        } else {
+            const id = pendingNodeData.id;
+            creationData.nodes = creationData.nodes.filter(n => n.id !== id);
+            // Also delete connected edges
+            creationData.edges = creationData.edges.filter(e => e.from !== id && e.to !== id);
+        }
+
+        saveCreationData();
+        renderCreationData();
+        modalOverlay.style.display = 'none';
+        pendingNodeData = null;
+    }
+});
+
+function handleEdgeSelection(latlng) {
+    // Find nearest node in creationData
+    let nearest = null;
+    let minDist = 20; // 20 units threshold
+
+    creationData.nodes.forEach(node => {
+        const nodeLatLng = map.unproject([node.x, node.y], nativeZoom);
+        const d = map.distance(latlng, nodeLatLng); // This is meters, let's use pixel dist
+
+        const p1 = map.project(latlng, nativeZoom);
+        const p2 = L.point(node.x, node.y);
+        const dist = p1.distanceTo(p2);
+
+        if (dist < minDist) {
+            minDist = dist;
+            nearest = node;
+        }
+    });
+
+    if (!nearest) return;
+
+    if (!edgeStartNode) {
+        edgeStartNode = nearest;
+        // Visual feedback
+        const marker = creationLayers.find(l => l.options && l.options.nodeId === nearest.id);
+        if (marker) marker.setStyle({ color: 'var(--color-warning)' });
+    } else {
+        if (edgeStartNode.id === nearest.id) {
+            edgeStartNode = null;
+            renderCreationData();
+            return;
+        }
+        showCreationModal('edge', { from: edgeStartNode.id, to: nearest.id });
+        edgeStartNode = null;
+    }
+}
+
+function renderCreationData() {
+    clearCreationLayers();
+    if (!creationModeEnabled) return;
+
+    creationData.nodes.forEach(node => {
+        const latlng = map.unproject([node.x, node.y], nativeZoom);
+        const marker = L.circleMarker(latlng, {
+            radius: 6,
+            color: node.type === 'poi' ? 'var(--color-info)' : 'var(--color-success)',
+            fillColor: node.type === 'poi' ? 'var(--color-info)' : 'var(--color-success)',
+            fillOpacity: 0.8,
+            weight: 2,
+            nodeId: node.id
+        }).addTo(map);
+
+        marker.on('click', (e) => {
+            L.DomEvent.stopPropagation(e);
+            showCreationModal(node.type === 'poi' ? 'building' : 'intersection', node, true);
+        });
+
+        marker.bindTooltip(node.label, { permanent: false, direction: 'top' });
+        creationLayers.push(marker);
+    });
+
+    creationData.edges.forEach(edge => {
+        const fromNode = creationData.nodes.find(n => n.id === edge.from);
+        const toNode = creationData.nodes.find(n => n.id === edge.to);
+        if (fromNode && toNode) {
+            const start = map.unproject([fromNode.x, fromNode.y], nativeZoom);
+            const end = map.unproject([toNode.x, toNode.y], nativeZoom);
+            const latlngs = [start, end];
+
+            const polyline = L.polyline(latlngs, {
+                color: 'var(--color-primary)',
+                weight: 5,
+                opacity: 0.7
+            }).addTo(map);
+
+            polyline.on('click', (e) => {
+                L.DomEvent.stopPropagation(e);
+                showCreationModal('edge', edge, true);
+            });
+
+            // Add tooltip for speed limit
+            polyline.bindTooltip(`Speed: ${edge.speed}`, { sticky: true });
+
+            creationLayers.push(polyline);
+
+            // Add direction arrow if oneWay (show on hover)
+            if (edge.oneWay) {
+                const decorator = L.polylineDecorator(polyline, {
+                    patterns: [
+                        { offset: '50%', repeat: 0, symbol: L.Symbol.arrowHead({ pixelSize: 15, polygon: false, pathOptions: { stroke: true, color: 'var(--color-primary)', weight: 3, opacity: 0 } }) }
+                    ]
+                }).addTo(map);
+
+                polyline.on('mouseover', () => {
+                    decorator.setPatterns([
+                        { offset: '50%', repeat: 0, symbol: L.Symbol.arrowHead({ pixelSize: 15, polygon: false, pathOptions: { stroke: true, color: 'var(--color-primary)', weight: 3, opacity: 1 } }) }
+                    ]);
+                });
+
+                polyline.on('mouseout', () => {
+                    decorator.setPatterns([
+                        { offset: '50%', repeat: 0, symbol: L.Symbol.arrowHead({ pixelSize: 15, polygon: false, pathOptions: { stroke: true, color: 'var(--color-primary)', weight: 3, opacity: 0 } }) }
+                    ]);
+                });
+
+                creationLayers.push(decorator);
+            }
+        }
+    });
+}
+
+function clearCreationLayers() {
+    creationLayers.forEach(l => map.removeLayer(l));
+    creationLayers = [];
+}
+
+function saveCreationData() {
+    localStorage.setItem('creation-mapping', JSON.stringify(creationData, null, 2));
+}
+
+openCreationDataBtn.addEventListener('click', () => {
+    const output = document.getElementById('creation-data-output');
+    output.value = JSON.stringify(creationData, null, 2);
+
+    modalOverlay.style.display = 'flex';
+    creationModal.style.display = 'none';
+    dataModal.style.display = 'flex';
+});
+
+const importBtn = document.getElementById('import-creation-data-btn');
+const importInput = document.getElementById('import-creation-input');
+
+importBtn.addEventListener('click', () => {
+    importInput.click();
+});
+
+importInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        try {
+            const data = JSON.parse(event.target.result);
+            if (!data.nodes || !data.edges) {
+                throw new Error("Invalid file format. Must contain 'nodes' and 'edges'.");
+            }
+            creationData = data;
+            saveCreationData();
+            renderCreationData();
+            alert("Creation data imported successfully!");
+        } catch (err) {
+            alert("Error importing file: " + err.message);
+        }
+    };
+    reader.readAsText(file);
+    // Reset input
+    importInput.value = '';
+});
+
+document.getElementById('delete-creation-data-btn').addEventListener('click', () => {
+    if (confirm("Are you sure you want to delete all creation data? This will clear everything from local storage and the current session.")) {
+        creationData = { nodes: [], edges: [] };
+        saveCreationData();
+        renderCreationData();
+        alert("Creation data deleted.");
+    }
+});
+
+document.getElementById('close-data-modal').addEventListener('click', () => {
+    modalOverlay.style.display = 'none';
+    pendingNodeData = null;
+});
+
+document.getElementById('copy-data-btn').addEventListener('click', () => {
+    const output = document.getElementById('creation-data-output');
+    copyToClipboard(output.value);
+    alert("Copied to clipboard!");
+});
