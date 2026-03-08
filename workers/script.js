@@ -331,29 +331,30 @@ function findFastestRoute(startId, endId) {
         adjacencyList[nodeId] = [...mapData.adjacencyList[nodeId]];
     }
 
-    // For buildings, ensure we consider the 2 nearest intersections as entry/exit points
+    // For buildings, ensure we consider the 2 nearest non-POI nodes as entry/exit points
+    // This allows POIs to connect to lane-specific nodes or waypoints in high-density data.
     const ensureDynamicEdges = (nodeId) => {
         const node = nodes.find(n => n.id === nodeId);
         if (!node || node.type !== 'poi') return;
 
-        const intersections = nodes.filter(n => n.type === 'intersection');
-        const sorted = intersections.map(inter => {
-            const dx = inter.x - node.x;
-            const dy = inter.y - node.y;
-            return { inter, dist: Math.sqrt(dx * dx + dy * dy) };
+        const roadNodes = nodes.filter(n => n.type !== 'poi');
+        const sorted = roadNodes.map(target => {
+            const dx = target.x - node.x;
+            const dy = target.y - node.y;
+            return { target, dist: Math.sqrt(dx * dx + dy * dy) };
         }).sort((a, b) => a.dist - b.dist);
 
         const nearest = sorted.slice(0, 2);
 
         if (!adjacencyList[nodeId]) adjacencyList[nodeId] = [];
 
-        nearest.forEach(({ inter, dist }) => {
-            if (!adjacencyList[nodeId].some(e => e.to === inter.id)) {
-                const edge = { from: nodeId, to: inter.id, distance: dist, speed: 25 };
-                adjacencyList[nodeId].push({ to: inter.id, edge });
+        nearest.forEach(({ target, dist }) => {
+            if (!adjacencyList[nodeId].some(e => e.to === target.id)) {
+                const edge = { from: nodeId, to: target.id, distance: dist, speed: 25 };
+                adjacencyList[nodeId].push({ to: target.id, edge });
 
-                if (!adjacencyList[inter.id]) adjacencyList[inter.id] = [];
-                adjacencyList[inter.id] = [...adjacencyList[inter.id], { to: nodeId, edge }];
+                if (!adjacencyList[target.id]) adjacencyList[target.id] = [];
+                adjacencyList[target.id] = [...adjacencyList[target.id], { to: nodeId, edge }];
             }
         });
     };
@@ -419,21 +420,21 @@ function generateDirections(path) {
 
     const directions = [];
     let currentRoad = null;
+    let started = false;
 
     path.forEach((step, index) => {
         const toNode = mapData.nodes.find(n => n.id === step.to);
 
-        // Skip waypoint nodes in directions
-        if (toNode.type === 'waypoint') return;
+        // Skip waypoint nodes in directions, unless it's the very last node
+        if (toNode.type === 'waypoint' && index !== path.length - 1) return;
 
         const roadName = toNode.label.includes('&') ? toNode.label.split('&')[0].trim() : toNode.label;
 
-        if (index === 0) {
+        if (!started) {
             directions.push(`Head towards ${toNode.label}`);
             currentRoad = roadName;
-        }
-
-        if (index === path.length - 1) {
+            started = true;
+        } else if (index === path.length - 1) {
             directions.push(`Arrive at ${toNode.label}`);
         } else if (index > 0 && toNode.type === 'intersection' && roadName !== currentRoad) {
             directions.push(`Turn onto ${toNode.label}`);
