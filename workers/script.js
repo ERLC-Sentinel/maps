@@ -665,6 +665,7 @@ const intersectionFields = document.getElementById('intersection-fields');
 const edgeFields = document.getElementById('edge-fields');
 const modalSave = document.getElementById('modal-save');
 const modalCancel = document.getElementById('modal-cancel');
+const modalDelete = document.getElementById('modal-delete');
 const closeModalBtns = document.querySelectorAll('.close-modal');
 
 creationToggle.addEventListener('change', (e) => {
@@ -693,28 +694,46 @@ function updateCreationModeVisibility() {
     }
 }
 
-function showCreationModal(type, data) {
-    pendingNodeData = { type, ...data };
-    modalTitle.textContent = type === 'building' ? 'Create Building Node' :
-                          type === 'intersection' ? 'Create Intersection Node' :
-                          'Create Edge';
+function showCreationModal(type, data, isEdit = false) {
+    pendingNodeData = { type, ...data, isEdit };
+    const titlePrefix = isEdit ? 'Edit' : 'Create';
+    modalTitle.textContent = type === 'building' ? `${titlePrefix} Building Node` :
+                          type === 'intersection' ? `${titlePrefix} Intersection Node` :
+                          `${titlePrefix} Edge`;
 
     buildingFields.style.display = type === 'building' ? 'block' : 'none';
     intersectionFields.style.display = type === 'intersection' ? 'block' : 'none';
     edgeFields.style.display = type === 'edge' ? 'block' : 'none';
+    modalDelete.style.display = isEdit ? 'block' : 'none';
 
     modalOverlay.style.display = 'flex';
     creationModal.style.display = 'flex';
     dataModal.style.display = 'none';
+    lucide.createIcons();
 
-    // Clear inputs
-    document.getElementById('building-label').value = '';
-    document.getElementById('building-address').value = '';
-    document.getElementById('road-h').value = '';
-    document.getElementById('lanes-h').value = '';
-    document.getElementById('road-v').value = '';
-    document.getElementById('lanes-v').value = '';
-    document.getElementById('edge-speed').value = '40';
+    if (isEdit) {
+        if (type === 'building') {
+            document.getElementById('building-label').value = data.label || '';
+            document.getElementById('building-address').value = data.address || '';
+        } else if (type === 'intersection') {
+            const parts = (data.label || '').split('&').map(s => s.trim());
+            document.getElementById('road-h').value = parts[0] || '';
+            document.getElementById('road-v').value = parts[1] || '';
+            document.getElementById('lanes-h').value = data.h_lanes || '';
+            document.getElementById('lanes-v').value = data.v_lanes || '';
+        } else if (type === 'edge') {
+            document.getElementById('edge-speed').value = data.speed || '40';
+        }
+    } else {
+        // Clear inputs
+        document.getElementById('building-label').value = '';
+        document.getElementById('building-address').value = '';
+        document.getElementById('road-h').value = '';
+        document.getElementById('lanes-h').value = '';
+        document.getElementById('road-v').value = '';
+        document.getElementById('lanes-v').value = '';
+        document.getElementById('edge-speed').value = '40';
+    }
 }
 
 modalCancel.addEventListener('click', () => {
@@ -746,12 +765,28 @@ modalSave.addEventListener('click', () => {
             address,
             type: 'poi'
         };
-        creationData.nodes.push(node);
+
+        if (pendingNodeData.isEdit) {
+            const oldId = pendingNodeData.id;
+            const index = creationData.nodes.findIndex(n => n.id === oldId);
+            if (index !== -1) {
+                creationData.nodes[index] = node;
+                // Update connected edges if ID changed
+                if (oldId !== id) {
+                    creationData.edges.forEach(edge => {
+                        if (edge.from === oldId) edge.from = id;
+                        if (edge.to === oldId) edge.to = id;
+                    });
+                }
+            }
+        } else {
+            creationData.nodes.push(node);
+        }
     } else if (pendingNodeData.type === 'intersection') {
         const roadH = document.getElementById('road-h').value.trim();
         const roadV = document.getElementById('road-v').value.trim();
-        const lanesH = parseInt(document.getElementById('lanes-h').value);
-        const lanesV = parseInt(document.getElementById('lanes-v').value);
+        const lanesH = parseInt(document.getElementById('lanes-h').value) || 0;
+        const lanesV = parseInt(document.getElementById('lanes-v').value) || 0;
 
         if (!roadH || !roadV) return alert("Both roads are required");
 
@@ -766,33 +801,77 @@ modalSave.addEventListener('click', () => {
             h_lanes: lanesH,
             v_lanes: lanesV
         };
-        creationData.nodes.push(node);
+
+        if (pendingNodeData.isEdit) {
+            const oldId = pendingNodeData.id;
+            const index = creationData.nodes.findIndex(n => n.id === oldId);
+            if (index !== -1) {
+                creationData.nodes[index] = node;
+                if (oldId !== id) {
+                    creationData.edges.forEach(edge => {
+                        if (edge.from === oldId) edge.from = id;
+                        if (edge.to === oldId) edge.to = id;
+                    });
+                }
+            }
+        } else {
+            creationData.nodes.push(node);
+        }
     } else if (pendingNodeData.type === 'edge') {
         const speed = parseInt(document.getElementById('edge-speed').value);
         if (isNaN(speed)) return alert("Invalid speed");
 
-        const fromNode = creationData.nodes.find(n => n.id === pendingNodeData.from);
-        const toNode = creationData.nodes.find(n => n.id === pendingNodeData.to);
+        if (pendingNodeData.isEdit) {
+            const edge = creationData.edges.find(e => e.from === pendingNodeData.from && e.to === pendingNodeData.to);
+            if (edge) {
+                edge.speed = speed;
+            }
+        } else {
+            const fromNode = creationData.nodes.find(n => n.id === pendingNodeData.from);
+            const toNode = creationData.nodes.find(n => n.id === pendingNodeData.to);
 
-        const dx = toNode.x - fromNode.x;
-        const dy = toNode.y - fromNode.y;
-        const distance = parseFloat(Math.sqrt(dx * dx + dy * dy).toFixed(2));
+            const dx = toNode.x - fromNode.x;
+            const dy = toNode.y - fromNode.y;
+            const distance = parseFloat(Math.sqrt(dx * dx + dy * dy).toFixed(2));
 
-        const edge = {
-            from: pendingNodeData.from,
-            to: pendingNodeData.to,
-            distance,
-            speed,
-            oneWay: false,
-            waypoints: []
-        };
-        creationData.edges.push(edge);
+            const edge = {
+                from: pendingNodeData.from,
+                to: pendingNodeData.to,
+                distance,
+                speed,
+                oneWay: false,
+                waypoints: []
+            };
+            creationData.edges.push(edge);
+        }
     }
 
     saveCreationData();
     renderCreationData();
     modalOverlay.style.display = 'none';
     pendingNodeData = null;
+});
+
+modalDelete.addEventListener('click', () => {
+    if (!pendingNodeData || !pendingNodeData.isEdit) return;
+
+    if (confirm("Are you sure you want to delete this?")) {
+        if (pendingNodeData.type === 'edge') {
+            creationData.edges = creationData.edges.filter(e =>
+                !(e.from === pendingNodeData.from && e.to === pendingNodeData.to)
+            );
+        } else {
+            const id = pendingNodeData.id;
+            creationData.nodes = creationData.nodes.filter(n => n.id !== id);
+            // Also delete connected edges
+            creationData.edges = creationData.edges.filter(e => e.from !== id && e.to !== id);
+        }
+
+        saveCreationData();
+        renderCreationData();
+        modalOverlay.style.display = 'none';
+        pendingNodeData = null;
+    }
 });
 
 function handleEdgeSelection(latlng) {
@@ -847,6 +926,11 @@ function renderCreationData() {
             nodeId: node.id
         }).addTo(map);
 
+        marker.on('click', (e) => {
+            L.DomEvent.stopPropagation(e);
+            showCreationModal(node.type === 'poi' ? 'building' : 'intersection', node, true);
+        });
+
         marker.bindTooltip(node.label, { permanent: false, direction: 'top' });
         creationLayers.push(marker);
     });
@@ -861,9 +945,19 @@ function renderCreationData() {
             ];
             const polyline = L.polyline(latlngs, {
                 color: 'var(--color-primary)',
-                weight: 3,
+                weight: 5,
                 opacity: 0.7
             }).addTo(map);
+
+            polyline.on('click', (e) => {
+                L.DomEvent.stopPropagation(e);
+                showCreationModal('edge', edge, true);
+            });
+
+            // Add tooltip for speed limit
+            polyline.bindTooltip(`Speed: ${edge.speed}`, { sticky: true });
+
+            polyline.addTo(map);
             creationLayers.push(polyline);
         }
     });
@@ -885,6 +979,46 @@ openCreationDataBtn.addEventListener('click', () => {
     modalOverlay.style.display = 'flex';
     creationModal.style.display = 'none';
     dataModal.style.display = 'flex';
+});
+
+const importBtn = document.getElementById('import-creation-data-btn');
+const importInput = document.getElementById('import-creation-input');
+
+importBtn.addEventListener('click', () => {
+    importInput.click();
+});
+
+importInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        try {
+            const data = JSON.parse(event.target.result);
+            if (!data.nodes || !data.edges) {
+                throw new Error("Invalid file format. Must contain 'nodes' and 'edges'.");
+            }
+            creationData = data;
+            saveCreationData();
+            renderCreationData();
+            alert("Creation data imported successfully!");
+        } catch (err) {
+            alert("Error importing file: " + err.message);
+        }
+    };
+    reader.readAsText(file);
+    // Reset input
+    importInput.value = '';
+});
+
+document.getElementById('delete-creation-data-btn').addEventListener('click', () => {
+    if (confirm("Are you sure you want to delete all creation data? This will clear everything from local storage and the current session.")) {
+        creationData = { nodes: [], edges: [] };
+        saveCreationData();
+        renderCreationData();
+        alert("Creation data deleted.");
+    }
 });
 
 document.getElementById('close-data-modal').addEventListener('click', () => {

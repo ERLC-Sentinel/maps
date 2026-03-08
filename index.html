@@ -97,6 +97,17 @@
                             <i data-lucide="wrench"></i>
                             Open Creation Data
                         </button>
+
+                        <button id="import-creation-data-btn" class="sidebar-btn">
+                            <i data-lucide="upload"></i>
+                            Import Creation Data
+                        </button>
+                        <input type="file" id="import-creation-input" style="display: none;" accept=".json">
+
+                        <button id="delete-creation-data-btn" class="sidebar-btn error">
+                            <i data-lucide="trash-2"></i>
+                            Delete Creation Data
+                        </button>
                     </div>
                 </div>
 
@@ -186,6 +197,11 @@
                 </div>
             </div>
             <div class="modal-footer">
+                <button id="modal-delete" class="sidebar-btn error" style="display: none;">
+                    <i data-lucide="trash-2"></i>
+                    Delete
+                </button>
+                <div style="flex-grow: 1;"></div>
                 <button id="modal-cancel" class="sidebar-btn">Cancel</button>
                 <button id="modal-save" class="sidebar-btn go-btn">Save</button>
             </div>
