@@ -842,7 +842,7 @@ modalSave.addEventListener('click', () => {
                 to: pendingNodeData.to,
                 distance,
                 speed,
-                oneWay: false,
+                oneWay: true,
                 waypoints: []
             };
             creationData.edges.push(edge);
@@ -942,10 +942,10 @@ function renderCreationData() {
         const fromNode = creationData.nodes.find(n => n.id === edge.from);
         const toNode = creationData.nodes.find(n => n.id === edge.to);
         if (fromNode && toNode) {
-            const latlngs = [
-                map.unproject([fromNode.x, fromNode.y], nativeZoom),
-                map.unproject([toNode.x, toNode.y], nativeZoom)
-            ];
+            const start = map.unproject([fromNode.x, fromNode.y], nativeZoom);
+            const end = map.unproject([toNode.x, toNode.y], nativeZoom);
+            const latlngs = [start, end];
+
             const polyline = L.polyline(latlngs, {
                 color: 'var(--color-primary)',
                 weight: 5,
@@ -960,8 +960,30 @@ function renderCreationData() {
             // Add tooltip for speed limit
             polyline.bindTooltip(`Speed: ${edge.speed}`, { sticky: true });
 
-            polyline.addTo(map);
             creationLayers.push(polyline);
+
+            // Add direction arrow if oneWay (show on hover)
+            if (edge.oneWay) {
+                const decorator = L.polylineDecorator(polyline, {
+                    patterns: [
+                        { offset: '50%', repeat: 0, symbol: L.Symbol.arrowHead({ pixelSize: 15, polygon: false, pathOptions: { stroke: true, color: 'var(--color-primary)', weight: 3, opacity: 0 } }) }
+                    ]
+                }).addTo(map);
+
+                polyline.on('mouseover', () => {
+                    decorator.setPatterns([
+                        { offset: '50%', repeat: 0, symbol: L.Symbol.arrowHead({ pixelSize: 15, polygon: false, pathOptions: { stroke: true, color: 'var(--color-primary)', weight: 3, opacity: 1 } }) }
+                    ]);
+                });
+
+                polyline.on('mouseout', () => {
+                    decorator.setPatterns([
+                        { offset: '50%', repeat: 0, symbol: L.Symbol.arrowHead({ pixelSize: 15, polygon: false, pathOptions: { stroke: true, color: 'var(--color-primary)', weight: 3, opacity: 0 } }) }
+                    ]);
+                });
+
+                creationLayers.push(decorator);
+            }
         }
     });
 }
