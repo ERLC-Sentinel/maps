@@ -723,8 +723,11 @@ function showCreationModal(type, data, isEdit = false) {
             document.getElementById('building-address').value = data.address || '';
         } else if (type === 'intersection') {
             const parts = (data.label || '').split('&').map(s => s.trim());
-            document.getElementById('road-h').value = parts[0] || '';
-            document.getElementById('road-v').value = parts[1] || '';
+            // Extract road names from label if they follow "Name (Lanes)" format
+            const roadH = parts[0] ? parts[0].replace(/\s*\(\d+\)$/, '') : '';
+            const roadV = parts[1] ? parts[1].replace(/\s*\(\d+\)$/, '') : '';
+            document.getElementById('road-h').value = roadH;
+            document.getElementById('road-v').value = roadV;
             document.getElementById('lanes-h').value = data.h_lanes || '';
             document.getElementById('lanes-v').value = data.v_lanes || '';
         } else if (type === 'edge') {
@@ -790,7 +793,7 @@ modalSave.addEventListener('click', () => {
 
         if (!roadH || !roadV) return alert("Both roads are required");
 
-        const label = `${roadH} & ${roadV}`;
+        const label = `${roadH} (${lanesH}) & ${roadV} (${lanesV})`;
         const id = label.toLowerCase().replace(/\s+/g, '-');
         const node = {
             id,
