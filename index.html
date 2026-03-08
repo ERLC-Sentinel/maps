@@ -85,6 +85,18 @@
                             </label>
                         </div>
 
+                    </div>
+                </div>
+
+                <div class="dropdown" id="creation-mode-dropdown">
+                    <div class="dropdown-header">
+                        <div class="dropdown-title">
+                            <i data-lucide="wrench" class="dropdown-icon"></i>
+                            <span>Creation Mode</span>
+                        </div>
+                        <i data-lucide="chevron-down" class="dropdown-chevron"></i>
+                    </div>
+                    <div class="dropdown-content">
                         <div class="feature-group toggle-row">
                             <label for="creation-mode-toggle">Creation Mode</label>
                             <label class="switch">
@@ -103,6 +115,11 @@
                             Import Creation Data
                         </button>
                         <input type="file" id="import-creation-input" style="display: none;" accept=".json">
+
+                        <button id="clear-duplicate-data-btn" class="sidebar-btn">
+                            <i data-lucide="filter"></i>
+                            Clear Duplicate Data
+                        </button>
 
                         <button id="delete-creation-data-btn" class="sidebar-btn error">
                             <i data-lucide="trash-2"></i>

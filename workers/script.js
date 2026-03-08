@@ -1037,6 +1037,44 @@ importInput.addEventListener('change', (e) => {
     importInput.value = '';
 });
 
+document.getElementById('clear-duplicate-data-btn').addEventListener('click', () => {
+    if (confirm("Are you sure you want to clear all duplicate data? This will remove nodes with duplicate IDs and edges with the same from/to nodes, keeping the first instance of each.")) {
+        const originalNodesCount = creationData.nodes.length;
+        const originalEdgesCount = creationData.edges.length;
+
+        // Clear Duplicate Nodes (keep first instance of each ID)
+        const uniqueNodes = [];
+        const seenNodeIds = new Set();
+        creationData.nodes.forEach(node => {
+            if (!seenNodeIds.has(node.id)) {
+                uniqueNodes.push(node);
+                seenNodeIds.add(node.id);
+            }
+        });
+
+        // Clear Duplicate Edges (keep first instance of each from-to pair)
+        const uniqueEdges = [];
+        const seenEdges = new Set();
+        creationData.edges.forEach(edge => {
+            const edgeKey = `${edge.from}->${edge.to}`;
+            if (!seenEdges.has(edgeKey)) {
+                uniqueEdges.push(edge);
+                seenEdges.add(edgeKey);
+            }
+        });
+
+        const removedNodes = originalNodesCount - uniqueNodes.length;
+        const removedEdges = originalEdgesCount - uniqueEdges.length;
+
+        creationData.nodes = uniqueNodes;
+        creationData.edges = uniqueEdges;
+
+        saveCreationData();
+        renderCreationData();
+        alert(`Clear duplicate data complete!\nRemoved ${removedNodes} duplicate nodes and ${removedEdges} duplicate edges.`);
+    }
+});
+
 document.getElementById('delete-creation-data-btn').addEventListener('click', () => {
     if (confirm("Are you sure you want to delete all creation data? This will clear everything from local storage and the current session.")) {
         creationData = { nodes: [], edges: [] };
