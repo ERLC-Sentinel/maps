@@ -666,7 +666,13 @@ const edgeFields = document.getElementById('edge-fields');
 const modalSave = document.getElementById('modal-save');
 const modalCancel = document.getElementById('modal-cancel');
 const modalDelete = document.getElementById('modal-delete');
-const closeModalBtns = document.querySelectorAll('.close-modal');
+// Use event delegation for modal closing to handle Lucide icon replacement
+document.addEventListener('click', (e) => {
+    if (e.target.closest('.close-modal')) {
+        modalOverlay.style.display = 'none';
+        pendingNodeData = null;
+    }
+});
 
 creationToggle.addEventListener('change', (e) => {
     creationModeEnabled = e.target.checked;
@@ -741,12 +747,6 @@ modalCancel.addEventListener('click', () => {
     pendingNodeData = null;
 });
 
-closeModalBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        modalOverlay.style.display = 'none';
-        pendingNodeData = null;
-    });
-});
 
 modalSave.addEventListener('click', () => {
     if (!pendingNodeData) return;
@@ -1023,6 +1023,7 @@ document.getElementById('delete-creation-data-btn').addEventListener('click', ()
 
 document.getElementById('close-data-modal').addEventListener('click', () => {
     modalOverlay.style.display = 'none';
+    pendingNodeData = null;
 });
 
 document.getElementById('copy-data-btn').addEventListener('click', () => {
